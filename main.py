@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from database import engine, SessionLocal
 import models, schemas
 
-models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)  # Create the database tables based on the defined models. This line ensures that the database schema is created according to the SQLAlchemy models defined in models.py. It uses the metadata of the Base class to create all tables in the database that are defined as subclasses of Base. This is typically done at application startup to ensure that the necessary tables exist before any API operations are performed.
 
 app = FastAPI()
 
 # DB Dependency
-def get_db():
+def get_db():  # This function is a "dependency" that provides a database session to the API endpoints. It creates a new database session using SessionLocal, yields it for use in the endpoint, and ensures that the session is closed after the request is completed. This pattern is used to manage database connections efficiently and avoid resource leaks.
     db = SessionLocal()
     try:
         yield db
