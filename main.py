@@ -72,7 +72,7 @@
 
 # # Delete Blog API
 # @app.delete("/blogs/{id}")
-# def delete_blog(id:str, db: Session = Depends(get_db)):
+# def delete_blog(id:int, db: Session = Depends(get_db)):
 #     blog = db.query(models.Blog).filter(models.Blog.id == id)
 
 #     if not blog.first():
@@ -89,14 +89,14 @@
 #     }
 
 from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy.orm import Session
 from database import engine, SessionLocal
-import models, schemas
+from sqlalchemy.orm import Session
+from schemas import BlogsCreate, BlogsResponse
+from models import Blog
 
 app = FastAPI()
 
-models.Base.metadata.create_all(bind=engine)
-
+# Get Database Session
 def get_db():
     db = SessionLocal()
     try:
@@ -104,15 +104,17 @@ def get_db():
     finally:
         db.close()
 
+# Home page
 @app.get("/")
 def home():
     return {
-        "message": "Tinkssss...."
+        "message": "Hello Tinksss"
     }
 
-@app.post("/blogs", response_model=schemas.BlogResponse)
-def create_blog(blog: schemas.BlogCreate, db:Session = Depends(get_db)):
-    new_blog = models.Blog(
+# Create Blog API
+@app.post("/blogs", response_model=BlogsResponse)
+def create_blogs(blog: BlogsCreate, db: Session = Depends(get_db)):
+    new_blog = Blog(
         title = blog.title,
         content = blog.content
     )
@@ -122,3 +124,61 @@ def create_blog(blog: schemas.BlogCreate, db:Session = Depends(get_db)):
     db.refresh(new_blog)
 
     return new_blog
+
+# Read all Blogs API
+@app.get("/blogs", response_model=list[BlogsResponse])
+def get_blogs(db:Session = Depends(get_db)):
+    blogs = db.query(Blog).all()
+    return blogs
+
+# Read one Blog API
+@app.get("/blogs/{id}")
+def get_blog(id:str, db: Session = Depends(get_db)):
+    blog = db.query(Blog).filter(Blog.id == id).first()
+
+    if not blog:
+        raise HTTPException(
+            status_code=404,
+            detail="Blog not found"
+        )
+
+    return blog
+
+# Update Blog API
+@app.put("/blogs/{id}")
+def update_blog(id: int, blog: BlogsCreate, db:Session = Depends(get_db)):
+    current_blog = db.query(Blog).filter(Blog.id == id).first()
+
+    if not current_blog:
+        raise HTTPException(
+            status_code=404,
+            detail="Blog not found"
+        )
+
+    current_blog.title = blog.title
+    current_blog.content = blog.content
+
+    db.commit()
+    db.refresh(current_blog)
+
+    return {
+        "message" : "Blog updated successfully",
+        "blog" : current_blog
+    }
+
+@app.delete("/blogs/{id}")
+def delete_blog(id:int, db:Session = Depends(get_db)):
+    blog = db.query(Blog).filter(Blog.id == id)
+
+    if not blog.first():
+        raise HTTPException(
+            status_code=404,
+            detail="Blog not found"
+        )
+    
+    blog.delete()
+    db.commit()
+
+    return {
+        "message": "Blog deleted successfully"
+    }

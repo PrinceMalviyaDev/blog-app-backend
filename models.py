@@ -11,12 +11,14 @@
 #     title = Column(String)
 #     content = Column(Text)
 
-from sqlalchemy import Column, Integer, String, Text
-from database import Base
+from sqlalchemy import Column, String, Text, Integer
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
 
 class Blog(Base):
     __tablename__ = "blogs"
 
-    id = Column(Integer, primary_key=True ,index=True)
+    id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     content = Column(Text)

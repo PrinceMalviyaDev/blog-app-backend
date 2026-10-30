@@ -18,14 +18,11 @@
 
 from pydantic import BaseModel
 
-class BlogCreate(BaseModel):
-    title:str
-    content:str
-
-class BlogResponse(BaseModel):
-    id: int
+class BlogsCreate(BaseModel):
     title: str
     content: str
 
-    class Config:
-        from_attributes = True
+class BlogsResponse(BaseModel):
+    id: int
+    title: str
+    content: str
