@@ -26,3 +26,10 @@ class BlogsResponse(BaseModel):
     id: int
     title: str
     content: str
+
+    class Config:
+        from_attributes = True
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
