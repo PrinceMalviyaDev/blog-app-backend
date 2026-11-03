@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -72,10 +72,24 @@ def create_blogs(blog: BlogsCreate, db: Session = Depends(get_db), user = Depend
     return new_blog
 
 # Read all Blogs API
-@app.get("/blogs", response_model=list[BlogsResponse])
-def get_blogs(db:Session = Depends(get_db)):
-    blogs = db.query(Blog).all()
-    return blogs
+@app.get("/blogs")
+def get_blogs(page:int = 1, limit:int = 5, search:str = Query(default=""),db:Session = Depends(get_db)):
+
+    query = db.query(Blog)
+
+    if search:
+        query = query.filter(Blog.title.ilike(f"%{search}%"))
+
+    total = query.count()
+    start = (page - 1) * limit
+    blogs = query.offset(start).limit(limit).all()
+
+    return {
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "data": blogs
+    }
 
 # Read one Blog API
 @app.get("/blogs/{id}")
