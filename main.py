@@ -102,7 +102,7 @@ def get_blogs(page:int = 1, limit:int = 5, search:str = Query(default=""),db:Ses
 
 # Read one Blog API
 @app.get("/blogs/{id}")
-def get_blog(id:str, db: Session = Depends(get_db)):
+def get_blog(id:int, db: Session = Depends(get_db)):
     blog = db.query(Blog).filter(Blog.id == id).first()
 
     if not blog:
